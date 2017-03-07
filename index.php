@@ -1,18 +1,15 @@
 <?php
 
-if (!isset($_SESSION)){
-    session_start();
-}
-if (isset($_SESSION)) {
-    if (isset($_GET['action']) && $_GET['action'] == "New") {
+session_start();
+
+if (isset($_GET['action']) && $_GET['action'] == "new") {
         session_unset();
-    }
 }
 ?>
 <form name="Blackjack">
     <input type="submit" value="hit" name = "action" >
     <input type="submit" value="pass" name = "action" >
-    <input type="submit" value="newgame" name = "action" >
+    <input type="submit" value="new" name = "action" >
 </form>
 
 <?php
@@ -31,54 +28,33 @@ if (!isset($_SESSION['deck'])) {
     for ($x=0; $x<52; $x++){
         $_SESSION['deck'][$x]=["name" => $deck[$x], "value" => $values[$x]];
     }
-    $_SESSION['hand']=array();
-    $_SESSION['house']=array();
+    $_SESSION['hand']=[];
+    $_SESSION['house']=[];
     shuffle($_SESSION['deck']);
-    array_push($_SESSION['hand'], ($_SESSION['deck'][0]));
-    array_push($_SESSION['house'], $_SESSION['deck'][1]);
-    array_push($_SESSION['hand'], ($_SESSION['deck'][2]));
-    array_push($_SESSION['house'], $_SESSION['deck'][3]);
+    $_SESSION['hand'][]=array_pop($_SESSION['deck']);
+    $_SESSION['hand'][]=array_pop($_SESSION['deck']);
+    $_SESSION['house'][]=array_pop($_SESSION['deck']);
+    $_SESSION['house'][]=array_pop($_SESSION['deck']);
     $_SESSION['handscore'] = $_SESSION['hand'][0]['value'] + $_SESSION['hand'][1]['value'];
     echo gameboard();
 }
 function hit(){
-    array_push($_SESSION['hand'], ($_SESSION['deck'][2 + count($_SESSION['hand'])]));
-    $_SESSION['handscore'] += $_SESSION['deck'][2 + count($_SESSION['hand'])]["value"];
-    #if ($_SESSION['handscore'] > 21) {
-     #   for ($x = 0; $x < count($_SESSION['hand']); $x++) {
-      #      if (strpos($_SESSION['hand'][$x]["name"], "Ace") == true) {
-       #         if ($_SESSION['hand'][$x]["value"] == 11) {
-        #            $_SESSION['hand'][$x]["value"] = 1;
-         #           $_SESSION['handscore'] = $_SESSION['handscore'] - 10;
-          #      }
-           # }
-            if ($_SESSION['handscore'] >= 21) {
-                return endgameboard();
-            }
-           # break;
-        #}
-   # }
-    return gameboard();
+    $_SESSION['hand'][]=array_pop($_SESSION['deck']);
+    $_SESSION['handscore'] += $_SESSION['hand'][count($_SESSION['hand'])-1]['value'];
+    if ($_SESSION['handscore'] >= 21) {
+        echo endgameboard();
+    }else{
+        echo gameboard();
+    }
 }
 function pass(){
-    for ($x=0; $x<2; $x++){
-        if ($_SESSION['handscore']<=16){
-            array_push($_SESSION['house'], $_SESSION['deck'][1+count($_SESSION['hand'])]);
-            unset($_SESSION['deck'][1+count($_SESSION['hand'])]);
-            $_SESSION['handscore'] += $_SESSION['deck'][2+count($_SESSION['hand'])]['value'];
+    $_SESSION['housescore']= $_SESSION['house'][0]['value'] + $_SESSION['house'][1]['value'];
+    for ($x=0; $x<9; $x++){
+        if ($_SESSION['housescore']<=16){
+            $_SESSION['house'][]= array_pop($_SESSION['deck']);
+            $_SESSION['housescore'] += $_SESSION['house'][count($_SESSION['house'])-1]['value'];
         }
-        if ($_SESSION['handscore']>21){
-            for ($x=0; $x< count($_SESSION['house']); $x++){
-                if (strpos($_SESSION['house'][$x]["name"], "Ace") == true){
-                    $_SESSION['house'][$x]{"value"}=1;
-                }
-                else{
-                    echo endgameboard();
-                    break;
-                }
-            }
-        }
-        if ($_SESSION['handscore']>16 && $_SESSION['handscore']<21){
+        else{
             echo endgameboard();
             break;
         }
@@ -118,9 +94,6 @@ function endgameboard(){
 }
 
 switch ($_GET['action']){
-    case "newgame":
-        session_unset();
-        break;
     case "hit":
         hit();
         break;
